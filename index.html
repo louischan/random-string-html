@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="description" content="Real-time random string generator in JavaScript">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Random String Generator</title>
+<link href="assets/css/style.css" rel="stylesheet">
+</head>
+<body>
+<div id="page">
+    <div id="jumbo" class="overlay">
+        <span></span>
+    </div>
+    <div id="menu" class="overlay">
+        <ul class="options">
+            <li id="sym" class="option" title="Symbols"><span class="dot"></span>&amp;#!</li>
+            <li id="digit" class="option" title="Digits"><span class="dot"></span>0-9</li>
+            <li id="lowcase" class="option" title="Lowercase letters"><span class="dot"></span>a-z</li>
+            <li id="upcase" class="option" title="Uppercase letters"><span class="dot"></span>A-Z</li>
+        </ul>
+        <ul class="options pull-right">
+            <li class="option allNoneToggle" data-dir="1">All</li>
+            <li class="option allNoneToggle" data-dir="0">None</li>
+            <li id="dark" class="option darkBtn">Dark</li>
+        </ul>
+    </div>
+    <pre id="output"></pre>
+</div>
+<script src="assets/js/jquery-3.4.0.min.js"></script>
+<script>
+var sym = 0, lowcase, upcase, digit, optCount, charPerLine, fullscreen, dark, dir = 1,
+spr = ',', charWidth = 10.8, lineHeight = 24;
+
+$(function() {
+    $("body").addClass("notransition");
+    if (location.hash == '') toggleHashValue("sym", 1);
+    getHashValue();
+    setOutputHeight();
+    outputRand();
+    $("body").removeClass("notransition");
+
+    $(".option").click(function(){
+        var id = $(this).attr("id");
+        toggleHashValue(id, 1);
+    });
+
+    $(".allNoneToggle").click(function(){
+        var val = $(this).data("dir");
+        toggleSelectAll(val);
+    });
+
+    $("#jumbo").click(function(){
+        if (fullscreen) {
+            toggleHashValue("fullscreen");
+        }
+    });
+
+    $(window).on("mousewheel DOMMouseScroll touchmove", function(){
+        outputRand();
+    });
+
+    $(window).on("resize", function(){
+        calCharPerLine();
+        setOutputHeight();
+        outputRand();
+    });
+
+    $(window).on("hashchange", function(){
+        getHashValue();
+        outputRandMulti();
+    });
+
+    $(window).keypress(function(e){
+        if (e.which == 97 || e.which == 65) // A
+            toggleSelectAll(!optCount || optCount <= 1 || optCount == 2 && dir == 1);
+        else if (e.which == 102 || e.which == 70) // F
+            toggleHashValue("fullscreen");
+        else if (e.which == 100 || e.which == 68) // D
+            toggleHashValue("dark");
+        else if (e.which == 49) // 1
+            toggleHashValue("sym", 1);
+        else if (e.which == 50) // 2
+            toggleHashValue("digit", 1);
+        else if (e.which == 51) // 3
+            toggleHashValue("lowcase", 1);
+        else if (e.which == 52) // 4
+            toggleHashValue("upcase", 1);
+    });
+});
+
+function toggleSelectAll(enable) {
+    if (enable) {
+        setHashValue(["sym", "digit", "lowcase", "upcase"]);
+    } else {
+        setHashValue([]);
+    }
+}
+
+function getHashValue() {
+    sym = lowcase = upcase = digit = optCount = fullscreen = dark = 0;
+    $(".dot").removeClass("fill");
+    var settings = location.hash.substr(1).split(spr);
+    $.each(settings, function(i,v){
+        if (v != '' && typeof window[v] === "number" && window[v] == 0) {
+            window[v] = 1;
+            if ($("#"+v+" .dot").length > 0) {
+                $("#"+v+" .dot").addClass("fill");
+                optCount++;
+            }
+        }
+    });
+
+    $("body").toggleClass("fullscreen", Boolean(fullscreen));
+    calCharPerLine();
+    setOutputHeight();
+    setTimeout(setOutputHeight, 150);
+
+    $("body").toggleClass("darkmode", Boolean(dark));
+    $(".darkBtn").text(dark ? 'Light' : 'Dark');
+}
+
+function setHashValue(arr) {
+    if (fullscreen) arr.push("fullscreen");
+    if (dark) arr.push("dark");
+    location.replace("#" + arr.join(spr));
+}
+
+function toggleHashValue(id, mdir) {
+    if (typeof window[id] === "number") {
+        if (arguments.length == 2) dir = window[id] ? 0 : 1;
+        if (window[id]) popHashValue(id);
+        else addHashValue(id);
+    }
+}
+
+function addHashValue(id) {
+    location.replace( location.hash + (location.hash == '' ? "#"+id : spr+id) );
+}
+
+function popHashValue(id) {
+    location.replace( location.hash.replace("#"+id+spr, "#").replace(spr+id, '').replace("#"+id, "#") );
+}
+
+function calCharPerLine() {
+    var obj = fullscreen ? "body" : "#page";
+    charPerLine = Math.ceil($(obj).width() / charWidth);
+}
+
+function setOutputHeight() {
+    var h = $(window).height() - $("#output").offset().top;
+    $("#page").height(h);
+    if (!fullscreen) h = Math.floor((h - $("#menu").height()) / lineHeight) * lineHeight;
+    $("#output").height(h);
+}
+
+function setJumboWidth() {
+    var w = Math.ceil($("#jumbo span").width() / charWidth) * charWidth;
+    $("#jumbo").width(w);
+}
+
+function outputRandMulti() {
+    outputRand();
+    setTimeout(outputRand, 50);
+    setTimeout(outputRand, 100);
+}
+
+function outputRand() {
+    $("#output").text(generate(Math.ceil($("#output").height() / lineHeight) * charPerLine));
+    $("#jumbo span").text(generate(8));
+    setJumboWidth();
+}
+
+function generate(len) {
+    var string = "", bucket = "", avgLen = 10;
+    if (sym) bucket += "`~!@#$%^&*()_-+={}[]\\|:;\"'<>,.?/";
+    if (lowcase) bucket += "abcdefghijklmnopqrstuvwxyz";
+    if (upcase) bucket += "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    if (digit) bucket += "0123456789";
+    if (bucket == "") bucket = ".";
+    var pad = sym ? 0 : Math.ceil(bucket.length / avgLen);
+    for (var i = 0; i < pad; i++)
+        bucket += " ";
+
+    for (var i = 0; i < len; i++)
+        string += bucket.charAt(Math.floor(Math.random() * bucket.length));
+
+    return string;
+}
+</script>
+</body>
+</html>
