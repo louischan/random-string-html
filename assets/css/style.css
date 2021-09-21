@@ -2,17 +2,15 @@
     font-family: 'Source Code Pro';
     font-style: normal;
     font-weight: 500;
-    src: local('Source Code Pro Medium'), local('SourceCodePro-Medium'),
-       url('../fonts/source-code-pro-v9-latin-500.woff2') format('woff2'),
-       url('../fonts/source-code-pro-v9-latin-500.woff') format('woff');
+    font-display: swap;
+    src: url('../fonts/source-code-pro-v14-latin-500.woff2') format('woff2');
 }
 @font-face {
     font-family: 'Titillium Web';
     font-style: normal;
     font-weight: 600;
-    src: local('Titillium Web SemiBold'), local('TitilliumWeb-SemiBold'),
-       url('../fonts/titillium-web-v7-latin-600.woff2') format('woff2'),
-       url('../fonts/titillium-web-v7-latin-600.woff') format('woff');
+    font-display: swap;
+    src: url('../fonts/titillium-web-v10-latin-600.woff2') format('woff2');
 }
 body {
     color: #4d5977;
