@@ -2,7 +2,7 @@
 
 Real-time random string generator in JavaScript
 
-[Live Demo](https://louischan.github.io/random-string-html/)
+<https://louischan.github.io/random-string-html/>
 
 ## Keyboard Shortcuts
 
