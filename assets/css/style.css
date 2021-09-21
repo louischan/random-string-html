@@ -14,9 +14,6 @@
        url('../fonts/titillium-web-v7-latin-600.woff2') format('woff2'),
        url('../fonts/titillium-web-v7-latin-600.woff') format('woff');
 }
-html {
-    -moz-osx-font-smoothing: grayscale;
-}
 body {
     color: #4d5977;
     font-family: 'Titillium Web', sans-serif;

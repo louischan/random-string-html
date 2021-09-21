@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="description" content="Real-time random string generator in JavaScript">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Random">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
 <title>Random String Generator</title>
 <link href="assets/css/style.css" rel="stylesheet">
 </head>
@@ -29,8 +32,17 @@
 </div>
 <script src="assets/js/jquery-3.4.0.min.js"></script>
 <script>
-var sym = 0, lowcase, upcase, digit, optCount, charPerLine, fullscreen, dark, dir = 1,
-spr = ',', charWidth = 10.8, lineHeight = 24;
+var defaultOptions = {
+    sym: 0,
+    lowcase: 0,
+    upcase: 0,
+    digit: 0,
+    fullscreen: 0,
+    dark: 0
+};
+var options = Object.assign({}, defaultOptions),
+    optCount = 0, charPerLine = 0, dir = 1,
+    spr = ',', charWidth = 10.8, lineHeight = 24;
 
 $(function() {
     $("body").addClass("notransition");
@@ -50,12 +62,6 @@ $(function() {
         toggleSelectAll(val);
     });
 
-    $("#jumbo").click(function(){
-        if (fullscreen) {
-            toggleHashValue("fullscreen");
-        }
-    });
-
     $(window).on("mousewheel DOMMouseScroll touchmove", function(){
         outputRand();
     });
@@ -71,20 +77,22 @@ $(function() {
         outputRandMulti();
     });
 
-    $(window).keypress(function(e){
-        if (e.which == 97 || e.which == 65) // A
+    $(window).keydown(function(e){
+        if (e.which == 97 || e.which == 65) // A key
             toggleSelectAll(!optCount || optCount <= 1 || optCount == 2 && dir == 1);
-        else if (e.which == 102 || e.which == 70) // F
+        else if (e.which == 102 || e.which == 70) // F key
             toggleHashValue("fullscreen");
-        else if (e.which == 100 || e.which == 68) // D
+        else if (options.fullscreen && e.which == 27) // Esc key
+            toggleHashValue("fullscreen");
+        else if (e.which == 100 || e.which == 68) // D key
             toggleHashValue("dark");
-        else if (e.which == 49) // 1
+        else if (e.which == 49) // 1 key
             toggleHashValue("sym", 1);
-        else if (e.which == 50) // 2
+        else if (e.which == 50) // 2 key
             toggleHashValue("digit", 1);
-        else if (e.which == 51) // 3
+        else if (e.which == 51) // 3 key
             toggleHashValue("lowcase", 1);
-        else if (e.which == 52) // 4
+        else if (e.which == 52) // 4 key
             toggleHashValue("upcase", 1);
     });
 });
@@ -98,12 +106,13 @@ function toggleSelectAll(enable) {
 }
 
 function getHashValue() {
-    sym = lowcase = upcase = digit = optCount = fullscreen = dark = 0;
+    options = Object.assign({}, defaultOptions);
+    optCount = 0;
     $(".dot").removeClass("fill");
     var settings = location.hash.substr(1).split(spr);
     $.each(settings, function(i,v){
-        if (v != '' && typeof window[v] === "number" && window[v] == 0) {
-            window[v] = 1;
+        if (v != '' && typeof options[v] === "number" && options[v] == 0) {
+            options[v] = 1;
             if ($("#"+v+" .dot").length > 0) {
                 $("#"+v+" .dot").addClass("fill");
                 optCount++;
@@ -111,25 +120,25 @@ function getHashValue() {
         }
     });
 
-    $("body").toggleClass("fullscreen", Boolean(fullscreen));
+    $("body").toggleClass("fullscreen", Boolean(options.fullscreen));
     calCharPerLine();
     setOutputHeight();
     setTimeout(setOutputHeight, 150);
 
-    $("body").toggleClass("darkmode", Boolean(dark));
-    $(".darkBtn").text(dark ? 'Light' : 'Dark');
+    $("body").toggleClass("darkmode", Boolean(options.dark));
+    $(".darkBtn").text(options.dark ? 'Light' : 'Dark');
 }
 
 function setHashValue(arr) {
-    if (fullscreen) arr.push("fullscreen");
-    if (dark) arr.push("dark");
+    if (options.fullscreen) arr.push("fullscreen");
+    if (options.dark) arr.push("dark");
     location.replace("#" + arr.join(spr));
 }
 
 function toggleHashValue(id, mdir) {
-    if (typeof window[id] === "number") {
-        if (arguments.length == 2) dir = window[id] ? 0 : 1;
-        if (window[id]) popHashValue(id);
+    if (typeof options[id] === "number") {
+        if (arguments.length == 2) dir = options[id] ? 0 : 1;
+        if (options[id]) popHashValue(id);
         else addHashValue(id);
     }
 }
@@ -143,14 +152,14 @@ function popHashValue(id) {
 }
 
 function calCharPerLine() {
-    var obj = fullscreen ? "body" : "#page";
+    var obj = options.fullscreen ? "body" : "#page";
     charPerLine = Math.ceil($(obj).width() / charWidth);
 }
 
 function setOutputHeight() {
     var h = $(window).height() - $("#output").offset().top;
     $("#page").height(h);
-    if (!fullscreen) h = Math.floor((h - $("#menu").height()) / lineHeight) * lineHeight;
+    if (!options.fullscreen) h = Math.floor((h - $("#menu").height()) / lineHeight) * lineHeight;
     $("#output").height(h);
 }
 
@@ -173,12 +182,12 @@ function outputRand() {
 
 function generate(len) {
     var string = "", bucket = "", avgLen = 10;
-    if (sym) bucket += "`~!@#$%^&*()_-+={}[]\\|:;\"'<>,.?/";
-    if (lowcase) bucket += "abcdefghijklmnopqrstuvwxyz";
-    if (upcase) bucket += "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    if (digit) bucket += "0123456789";
+    if (options.sym) bucket += "`~!@#$%^&*()_-+={}[]\\|:;\"'<>,.?/";
+    if (options.lowcase) bucket += "abcdefghijklmnopqrstuvwxyz";
+    if (options.upcase) bucket += "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    if (options.digit) bucket += "0123456789";
     if (bucket == "") bucket = ".";
-    var pad = sym ? 0 : Math.ceil(bucket.length / avgLen);
+    var pad = options.sym ? 0 : Math.ceil(bucket.length / avgLen);
     for (var i = 0; i < pad; i++)
         bucket += " ";
 
